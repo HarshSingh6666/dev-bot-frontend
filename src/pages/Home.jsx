@@ -22,14 +22,14 @@ export default function Home() {
 
         <div className="home-buttons">
           <button onClick={() => navigate("/login")} className="home-btn">
-            🔐 Login
+             Login
           </button>
           <button onClick={() => navigate("/signup")} className="home-btn">
-            📝 Signup
+             Signup
           </button>
-          {/* <button onClick={goToChat} className="home-btn primary">
-            💬 Go to Chat
-          </button> */}
+           <button onClick={goToChat} className="home-btn primary">
+            Go to Chat
+          </button> 
         </div>
       </div>
     </div>
