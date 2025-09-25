@@ -25,10 +25,7 @@ export default function Login() {
     }
   };
 
-  const googleLogin = () => {
-    window.open("http://localhost:5000/api/auth/google", "_self");
-  };
-
+ 
   return (
     <div className="auth-container fade-in">
       <h2 className="auth-title">Login</h2>
