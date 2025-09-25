@@ -31,7 +31,7 @@ useEffect(() => {
     if (!token) return;
 
     try {
-      const resp = await fetch("http://localhost:5000/api/history", {
+      const resp = await fetch("https://dev-bot-backend.onrender.com/api/history", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await resp.json();
@@ -70,7 +70,7 @@ useEffect(() => {
         formData.append("image", image);
         formData.append("prompt", input || "Describe this image");
 
-        const resp = await fetch("http://localhost:5000/api/upload", {
+        const resp = await fetch("https://dev-bot-backend.onrender.com/api/upload", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
@@ -81,7 +81,7 @@ useEffect(() => {
       } else {
         const body = { prompt: userMessage.text };
 
-        const resp = await fetch("http://localhost:5000/api/chat", {
+        const resp = await fetch("https://dev-bot-backend.onrender.com/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -118,7 +118,7 @@ useEffect(() => {
     if (!messages.length) return;
 
     try {
-      const resp = await fetch("http://localhost:5000/api/save", {
+      const resp = await fetch("https://dev-bot-backend.onrender.com/api/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
