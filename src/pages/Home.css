@@ -1,0 +1,164 @@
+/* Page container */
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(145deg, #f0f0f0, #ffffff);
+  animation: fadeIn 1s ease-in;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Content box */
+.home-box {
+  text-align: center;
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 500px;
+  width: 90%;
+}
+
+/* Title and subtitle */
+.home-title {
+  font-size: 2rem;
+  margin-bottom: 10px;
+   text-align: center;
+}
+
+.highlight {
+  color: #4CAF50;
+  margin: 0 130px 0 120px;
+  
+}
+
+.home-subtext {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 30px;
+}
+
+/* Buttons */
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.home-btn {
+  padding: 12px 25px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #e0e0e0;
+  transition: all 0.3s ease;
+  width: 200px;
+}
+
+.home-btn:hover {
+  background-color: #d0d0d0;
+  transform: translateY(-2px);
+}
+
+.home-btn.primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.home-btn.primary:hover {
+  background-color: #43a047;
+}
+
+/* Entrance animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Small devices (phones, less than 600px) */
+@media (max-width: 600px) {
+  .home-box {
+    padding: 30px 20px;
+    border-radius: 12px;
+    max-width: 90%;
+  }
+
+  .home-title {
+    font-size: 1.5rem;
+  }
+
+  .highlight {
+    margin: 0 auto;
+    display: block;
+  }
+
+  .home-subtext {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+
+  .home-buttons {
+    gap: 12px;
+  }
+
+  .home-btn {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 10px 20px;
+  }
+}
+
+/* Medium devices (tablets, 601px to 900px) */
+@media (min-width: 601px) and (max-width: 900px) {
+  .home-box {
+    padding: 35px 25px;
+    max-width: 90%;
+  }
+
+  .home-title {
+    font-size: 1.75rem;
+  }
+
+  .highlight {
+    margin: 0 auto;
+    display: inline;
+  }
+
+  .home-subtext {
+    font-size: 1rem;
+  }
+
+  .home-btn {
+    width: 220px;
+  }
+}
+
+/* Large devices (desktops, 901px and above) */
+@media (min-width: 901px) {
+  .home-box {
+    padding: 40px 30px;
+    max-width: 500px;
+  }
+
+  .home-title {
+    font-size: 2rem;
+  }
+
+  .highlight {
+    margin: 0 130px 0 120px;
+  }
+
+  .home-btn {
+    width: 200px;
+  }
+}
