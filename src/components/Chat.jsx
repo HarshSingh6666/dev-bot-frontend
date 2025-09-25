@@ -19,10 +19,10 @@ export default function Chat() {
 
   // Redirect to login if no token
   useEffect(() => {
-    if (!token || token === "undefined" || token === "null") {
-      navigate("/login", { replace: true });
-    }
-  }, []);
+  if (!token || token === "undefined" || token === "null") {
+    navigate("/login", { replace: true });
+  }
+}, [navigate, token]); 
 
   // Fetch chat history from backend
   // Sidebar only
