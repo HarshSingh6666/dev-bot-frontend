@@ -10,7 +10,7 @@ export default function Signup() {
 
   const handleSignup = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/signup", form);
+      const res = await axios.post("https://dev-bot-backend.onrender.com/api/auth/signup", form);
 
       // 🟢 If success, save token & go to chat
       if (res.data?.token) {
