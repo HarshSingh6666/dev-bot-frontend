@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./Home.css"; // New CSS file we'll create
+import "./Home.css"; 
 
 export default function Home() {
   const navigate = useNavigate();
@@ -17,21 +17,32 @@ export default function Home() {
   return (
     <div className="home-container">
       <div className="home-box">
-        <h1 className="home-title">Welcome to <span className="highlight">Devbot</span></h1>
-        <p className="home-subtext">Your AI assistant for smart text and image conversations.</p>
+        <h1 className="home-title">
+          Welcome to <span className="highlight">Devbot AI</span>
+        </h1>
+        <p className="home-subtext">
+          Your AI assistant for smart text and image conversations.
+        </p>
 
         <div className="home-buttons">
-          <button onClick={() => navigate("/login")} className="home-btn">
-            🔐 Login
+          <button onClick={() => navigate("/login")} className="home-btn secondary">
+            <span> Login</span>
           </button>
-          <button onClick={() => navigate("/signup")} className="home-btn">
-            📝 Signup
+          
+          <button onClick={() => navigate("/signup")} className="home-btn secondary">
+            <span>Signup</span>
           </button>
-          {/* <button onClick={goToChat} className="home-btn primary">
-            💬 Go to Chat
-          </button> */}
+          
+          <button onClick={goToChat} className="home-btn primary premium-glow">
+            <span> Go to Chat</span>
+            <div className="shine-effect"></div>
+          </button>
         </div>
       </div>
+      
+      {/* Decorative Background Circles for Animation */}
+      <div className="circle circle-1"></div>
+      <div className="circle circle-2"></div>
     </div>
   );
 }
