@@ -19,7 +19,7 @@ export default function Chat() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
   // 1. Auth Check
   useEffect(() => {
