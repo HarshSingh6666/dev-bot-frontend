@@ -1,235 +1,293 @@
-// Chat.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import "./Style.css";
+import { motion, AnimatePresence } from "framer-motion";
+import Sidebar from "../components/Sidebar"; 
+import "./Style.css"; 
 
 export default function Chat() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]); // Session-only messages
-  const [history, setHistory] = useState([]);   // Saved history from backend
+  const [messages, setMessages] = useState([]); // UI Messages
+  const [history, setHistory] = useState([]);   // Sidebar List
   const [loading, setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null); // Track active chat ID
   const [image, setImage] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+
   const fileInputRef = useRef();
-  const navigate = useNavigate();
   const scrollRef = useRef(null);
-
-
+  const textareaRef = useRef(null);
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Redirect to login if no token
-  useEffect(() => {
-    if (!token || token === "undefined" || token === "null") {
-      navigate("/login", { replace: true });
-    }
-  }, []);
+  const API_BASE = "http://localhost:5000/api";
 
-  // Fetch chat history from backend
-  // Sidebar only
-useEffect(() => {
+  // 1. Auth Check
+  useEffect(() => {
+    if (!token) navigate("/login", { replace: true });
+  }, [navigate, token]);
+
+  // 2. Fetch History (Sidebar List)
   const fetchHistory = async () => {
     if (!token) return;
-
     try {
-      const resp = await fetch("http://localhost:5000/api/history", {
+      const resp = await fetch(`${API_BASE}/history`, { 
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await resp.json();
+      
+      // Data aane par ensure karein ki wo sorted ho (Pinned first)
+      const sortedData = Array.isArray(data) ? data.sort((a, b) => {
+         if (a.isPinned === b.isPinned) {
+            return new Date(b.lastUpdated) - new Date(a.lastUpdated);
+         }
+         return a.isPinned ? -1 : 1;
+      }) : [];
 
-      setHistory(Array.isArray(data) ? data : []);
+      setHistory(sortedData);
     } catch (err) {
-      console.error("Error fetching history:", err);
+      console.error("History Error:", err);
     }
   };
 
-  fetchHistory();
-}, [token]);
+  useEffect(() => { fetchHistory(); }, [token]);
 
- useEffect(() => {
-  if (scrollRef.current) {
-    scrollRef.current.scrollIntoView({ behavior: "smooth" });
-  }
-}, [messages]);
+  // 3. Scroll & Resize Effects
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
-  // Send message or image
-  const send = async () => {
-    if (!input.trim() && !image) return;
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
 
-    const userMessage = { role: "user", text: input.trim(), image };
-    setMessages((m) => [...m, userMessage]);
+  // 4. Handle Load Specific Chat (From Sidebar)
+  const loadChat = async (id) => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${API_BASE}/history/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await resp.json();
+      
+      if (data && data.messages) {
+        setConversationId(data._id);
+        
+        // Map DB 'content' to UI 'text'
+        const formattedMessages = data.messages.map(msg => ({
+          role: msg.role === "model" ? "assistant" : "user",
+          text: msg.content,
+          image: msg.image || null
+        }));
+        setMessages(formattedMessages);
+      }
+    } catch (err) {
+      console.error("Load Chat Error:", err);
+    } finally {
+      setLoading(false);
+      if (window.innerWidth <= 768) setIsSidebarOpen(false);
+    }
+  };
 
+  // 5. Handle New Chat
+  const startNewChat = () => {
+    setMessages([]);
+    setConversationId(null);
     setInput("");
     setImage(null);
+    if (window.innerWidth <= 768) setIsSidebarOpen(false);
+  };
+
+  // 6. Send Message Logic
+  const send = async () => {
+    if (!input.trim() && !image) return;
+    
+    const userMsg = { role: "user", text: input.trim(), image: image ? URL.createObjectURL(image) : null };
+    setMessages((prev) => [...prev, userMsg]);
+    
+    const promptText = input;
+    setInput(""); 
+    setImage(null); 
     setLoading(true);
 
     try {
-      let reply = "⚠️ No response";
+      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      
+      const payload = { 
+        prompt: promptText,
+        conversationId: conversationId
+      };
 
-      if (image) {
-        const formData = new FormData();
-        formData.append("image", image);
-        formData.append("prompt", input || "Describe this image");
+      const resp = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload),
+      });
+      
+      const data = await resp.json();
 
-        const resp = await fetch("http://localhost:5000/api/upload", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
-
-        const json = await resp.json();
-        reply = json.reply || reply;
-      } else {
-        const body = { prompt: userMessage.text };
-
-        const resp = await fetch("http://localhost:5000/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        });
-
-        const json = await resp.json();
-        reply = json.reply || reply;
+      if (data.conversationId) {
+        setConversationId(data.conversationId);
+        if (!conversationId) fetchHistory(); // Refresh sidebar if new chat
       }
 
-      setMessages((m) => [...m, { role: "assistant", text: reply }]);
+      setMessages((prev) => [...prev, { role: "assistant", text: data.reply || "⚠️ No response" }]);
+
     } catch (err) {
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", text: " Error: " + err.message },
-      ]);
+      console.error(err);
+      setMessages((prev) => [...prev, { role: "assistant", text: "❌ Server Error" }]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Enter key to send
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+  // 7. Delete Logic
+  const deleteHistoryItem = async (id, e) => {
+    if(e) e.stopPropagation();
+    
+    try {
+      const resp = await fetch(`${API_BASE}/history/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resp.ok) {
+        setHistory((prev) => prev.filter((item) => item._id !== id));
+        if (conversationId === id) startNewChat();
+      }
+    } catch (err) { console.error("Delete failed", err); }
   };
 
-  // ✅ Save current chat to backend
-  const saveChat = async () => {
-    if (!messages.length) return;
-
+  // 8. 👇 NEW: Rename Logic
+  const renameChat = async (id, newTitle) => {
     try {
-      const resp = await fetch("http://localhost:5000/api/save", {
-        method: "POST",
-        headers: {
+      const resp = await fetch(`${API_BASE}/history/rename/${id}`, {
+        method: "PUT",
+        headers: { 
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ newTitle })
       });
-
-      const data = await resp.json();
-
-      if (data.success) {
-        alert("✅ Chat saved to history!");
-
-        // Update sidebar history with saved messages
-        setHistory((prev) => [...prev, ...messages]);
-
-        // Clear current chat session
-        setMessages([]);
-      } else {
-        alert(" Failed to save chat.");
+  
+      if (resp.ok) {
+        // UI me update karo bina page refresh kiye
+        setHistory(prev => prev.map(chat => 
+          chat._id === id ? { ...chat, title: newTitle } : chat
+        ));
       }
     } catch (err) {
-      console.error("Error saving chat:", err);
-      alert(" Error while saving chat.");
+      console.error("Rename failed", err);
+    }
+  };
+  
+  // 9. 👇 NEW: Pin Logic
+  const pinChat = async (id) => {
+    try {
+      const resp = await fetch(`${API_BASE}/history/pin/${id}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+  
+      if (resp.ok) {
+        const data = await resp.json();
+        
+        setHistory(prev => {
+          // Status update karo
+          const updatedList = prev.map(chat => 
+            chat._id === id ? { ...chat, isPinned: data.isPinned } : chat
+          );
+          // Re-sort: Pinned items sabse upar
+          return updatedList.sort((a, b) => {
+              if (a.isPinned === b.isPinned) {
+                  return new Date(b.lastUpdated) - new Date(a.lastUpdated);
+              }
+              return a.isPinned ? -1 : 1;
+          });
+        });
+      }
+    } catch (err) {
+      console.error("Pin failed", err);
     }
   };
 
   return (
     <div className="app-container">
-      <Sidebar allHistory={history} />
+      <Sidebar 
+        allHistory={history} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        onNewChat={startNewChat}
+        onSelectChat={loadChat}
+        onDeleteHistory={deleteHistoryItem}
+        activeId={conversationId}
+        // 👇 Ye naye functions pass kiye hain
+        onRename={renameChat}
+        onPin={pinChat}
+      />
 
-      <div className="chat-container">
-        <div className="chat-header">
-          <h2 className="title">Devbot</h2>
+      <main className="chat-container">
+        <button className="mobile-toggle" onClick={() => setIsSidebarOpen(true)}>☰</button>
+
+        <header className="chat-header">
+          <h2 className="title">Devbot AI</h2>
+        </header>
+
+        <div className="chat-box">
+          {messages.length === 0 && (
+            <div style={{ textAlign: "center", color: "#aaa", marginTop: "50px" }}>
+              <div style={{ fontSize: "3rem" }}>🤖</div>
+              <h3>How can I help you?</h3>
+            </div>
+          )}
+          
+          <AnimatePresence>
+            {messages.map((m, i) => (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={i} className={`message ${m.role}`}>
+                <div className="bubble-wrapper">
+                  {m.image && <img src={m.image} alt="upload" className="message-image" />}
+                  <div className="bubble">{m.text}</div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          
+          {loading && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="loading-container">
+              <span className="dot-pulse"></span> Thinking...
+            </motion.div>
+          )}
+          <div ref={scrollRef} />
         </div>
-<div className="chat-box">
-  {messages.length === 0 && <div className="placeholder">Say hi 👋</div>}
 
-  {messages.map((m, i) => (
-    <div key={i} className={`message ${m.role}`}>
-      {m.image && typeof m.image === "string" && (
-        <img src={m.image} alt="upload" className="chat-image" />
-      )}
-      {m.image && m.image instanceof File && (
-        <img
-          src={URL.createObjectURL(m.image)}
-          alt="upload"
-          className="chat-image"
-        />
-      )}
-      <div className="bubble">
-        {m.text || m.userMessage || m.botReply}
-      </div>
-    </div>
-  ))}
+        <footer className="input-area">
+          <AnimatePresence>
+            {image && (
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} className="image-preview-badge">
+                <img src={URL.createObjectURL(image)} alt="Preview" />
+                <button onClick={() => setImage(null)}>✕</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-  {loading && <div className="loading">⏳ Thinking...</div>}
-
-  {/* ✅ This ensures auto scroll to bottom */}
-  <div ref={scrollRef} />
-</div>
-
-        <div className="input-area">
-        {image && (
-  <div className="preview">
-    <p>📷 Image selected:</p>
-    <img
-      src={URL.createObjectURL(image)}
-      alt="preview"
-      className="chat-image"
-    />
-    <button onClick={() => setImage(null)} className="remove-btn">
-       Remove
-    </button>
-  </div>
-)}
-
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-          />
-          <div className="actions">
-            <button
-              className="upload-btn"
-              onClick={() => fileInputRef.current.click()}
-            >
-              📎
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files[0])}
+          <div className="input-wrapper">
+            <button className="upload-btn" onClick={() => fileInputRef.current.click()}>📎</button>
+            <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={(e) => setImage(e.target.files[0])} />
+            
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
+              placeholder="Ask anything..."
+              rows={1}
             />
-            <button className="send-btn" onClick={send} disabled={loading}>
-              {loading ? "..." : "➤"}
-            </button>
+            
+            <button className="send-btn" onClick={send} disabled={loading || (!input && !image)}>➤</button>
           </div>
-        </div>
-        {/* ✅ Save Chat Button */}
-          <button
-            className="save-chat-btn"
-            onClick={saveChat}
-            disabled={messages.length === 0}
-          >
-             Save Chat
-          </button>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 }
