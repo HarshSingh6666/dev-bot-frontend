@@ -1,82 +1,146 @@
-/* Page container */
+/* --- Base Variables --- */
+:root {
+  /* ☀️ Default: LIGHT MODE Colors */
+  --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); /* Light Grey */
+  --card-bg: rgba(255, 255, 255, 0.8);       /* White Card */
+  --card-border: rgba(0, 0, 0, 0.1);         /* Light Border */
+  --text-color: #1e293b;                     /* Dark Text */
+  --text-secondary: #64748b;                 /* Grey Text */
+  --primary-color: #6366f1;
+  --input-bg: #ffffff;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+/* --- Main Container --- */
 .home-container {
   min-height: 100vh;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(145deg, #f0f0f0, #ffffff);
-  animation: fadeIn 1s ease-in;
+  background: var(--bg-gradient);
+  position: relative;
+  overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Content box */
-.home-box {
-  text-align: center;
-  background: #fff;
-  padding: 40px 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  max-width: 500px;
-  width: 90%;
+/* --- Floating Background Animations --- */
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  animation: float 10s infinite alternate;
 }
 
-/* Title and subtitle */
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(99, 102, 241, 0.4);
+  top: -50px;
+  left: -50px;
+}
+
+.circle-2 {
+  width: 250px;
+  height: 250px;
+  background: rgba(236, 72, 153, 0.3);
+  bottom: -50px;
+  right: -50px;
+  animation-delay: -5s;
+}
+
+/* --- Glassmorphism Box --- */
+.home-box {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  padding: 3rem;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+  z-index: 1;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  /* Entrance Animation */
+  animation: fadeInUp 1s ease-out;
+}
+
+/* --- Typography --- */
 .home-title {
-  font-size: 2rem;
-  margin-bottom: 10px;
-   text-align: center;
+  color: var(--text-color);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
 }
 
 .highlight {
-  color: #4CAF50;
-  margin: 0 130px 0 120px;
-  
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
 }
 
 .home-subtext {
-  color: #666;
-  font-size: 1rem;
-  margin-bottom: 30px;
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
 }
 
-/* Buttons */
+/* --- Buttons Container --- */
 .home-buttons {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: 15px;
-  align-items: center;
+  flex-wrap: wrap; /* Allows wrapping on small screens */
 }
 
+/* --- Button Styling --- */
 .home-btn {
-  padding: 12px 25px;
+  padding: 12px 24px;
   font-size: 1rem;
-  border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: #e0e0e0;
+  border: none;
+  font-weight: 600;
   transition: all 0.3s ease;
-  width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.home-btn:hover {
-  background-color: #d0d0d0;
-  transform: translateY(-2px);
-}
-
+/* Primary Button (Go to Chat) */
 .home-btn.primary {
-  background-color: #4CAF50;
+  background: var(--primary-color);
   color: white;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
 }
 
 .home-btn.primary:hover {
-  background-color: #43a047;
+  background: var(--primary-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
 }
 
-/* Entrance animation */
-@keyframes fadeIn {
+/* Secondary Buttons (Login/Signup) */
+.home-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.home-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+/* --- Animations Keyframes --- */
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -84,81 +148,422 @@
   }
 }
 
+@keyframes float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(30px, 30px); }
+}
 
-/* Small devices (phones, less than 600px) */
+/* --- Responsiveness (Mobile) --- */
 @media (max-width: 600px) {
   .home-box {
-    padding: 30px 20px;
-    border-radius: 12px;
-    max-width: 90%;
-  }
-
-  .home-title {
-    font-size: 1.5rem;
-  }
-
-  .highlight {
-    margin: 0 auto;
-    display: block;
-  }
-
-  .home-subtext {
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-  }
-
-  .home-buttons {
-    gap: 12px;
-  }
-
-  .home-btn {
-    width: 100%;
-    font-size: 0.95rem;
-    padding: 10px 20px;
-  }
-}
-
-/* Medium devices (tablets, 601px to 900px) */
-@media (min-width: 601px) and (max-width: 900px) {
-  .home-box {
-    padding: 35px 25px;
-    max-width: 90%;
-  }
-
-  .home-title {
-    font-size: 1.75rem;
-  }
-
-  .highlight {
-    margin: 0 auto;
-    display: inline;
-  }
-
-  .home-subtext {
-    font-size: 1rem;
-  }
-
-  .home-btn {
-    width: 220px;
-  }
-}
-
-/* Large devices (desktops, 901px and above) */
-@media (min-width: 901px) {
-  .home-box {
-    padding: 40px 30px;
-    max-width: 500px;
+    padding: 2rem 1.5rem;
+    width: 95%;
   }
 
   .home-title {
     font-size: 2rem;
   }
 
-  .highlight {
-    margin: 0 130px 0 120px;
+  .home-buttons {
+    flex-direction: column; /* Stack buttons vertically on mobile */
+    gap: 12px;
   }
 
   .home-btn {
-    width: 200px;
+    width: 100%; /* Full width buttons */
+    justify-content: center;
   }
 }
+
+
+/* --- Shared Page Styles --- */
+.page-container {
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  padding: 20px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.back-btn:hover { color: white; }
+
+.page-title {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-align: center;
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- Profile Card --- */
+.profile-card, .settings-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;         /* NEW */
+  flex-direction: column; /* NEW */
+  align-items: center;   /* NEW: Center everything inside card */
+}
+
+.profile-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  width: 100%; /* Full width */
+}
+
+/* 👇 IMPORTANT FIX HERE */
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+  width: 120px;  /* Wrapper ko size diya */
+  height: 120px; /* Wrapper ko size diya */
+  border-radius: 50%;
+  background-color: #334155; /* Fallback background color */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto; /* Center align */
+  border: 4px solid #6366f1; /* Border wrapper pe lagaya */
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover; /* Image crop hoke fit hogi */
+  display: block;    /* Extra space remove karega */
+}
+
+.profile-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  border-radius: 50%;
+}
+
+.camera-icon {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  background: #ec4899;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 2px solid #1e293b; /* Icon ke around border */
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.info-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 5px;
+}
+
+.email-text {
+  color: #64748b; /* Email looks disabled */
+}
+
+.edit-input {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid #6366f1;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.2s;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.edit-btn, .save-btn {
+  background: #6366f1;
+  color: white;
+}
+
+.cancel-btn {
+  background: #334155;
+  color: white;
+}
+
+.danger-btn {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.danger-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* --- Settings Toggles --- */
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+.setting-info span {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.setting-info p {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+body.dark-mode {
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* Dark Blue */
+  --card-bg: rgba(255, 255, 255, 0.05);      /* Glass Dark */
+  --card-border: rgba(255, 255, 255, 0.1);   /* White Border */
+  --text-color: #ffffff;                     /* White Text */
+  --text-secondary: #cbd5e1;                 /* Light Grey Text */
+  --input-bg: rgba(0, 0, 0, 0.2);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* --- 2. GLOBAL STYLES (Apply Variables) --- */
+.page-container {
+  min-height: 100vh;
+  width: 100vw;
+  background: var(--bg-gradient); /* 👈 Variable Use Kiya */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-color);       /* 👈 Variable Use Kiya */
+  padding: 20px;
+  transition: all 0.3s ease;      /* Smooth Transition */
+}
+
+/* --- 3. CARDS (Profile & Settings) --- */
+.profile-card, .settings-card {
+  background: var(--card-bg);      /* 👈 Variable Use Kiya */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 40px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  border: 1px solid var(--card-border); /* 👈 Variable Use Kiya */
+  box-shadow: var(--shadow);
+  color: var(--text-color);        /* 👈 Variable Use Kiya */
+  
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 4. TEXT & HEADINGS --- */
+.page-title {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-align: center;
+  /* Gradient text sirf dark mode me acha lagta hai, simple rakhein ya variable use karein */
+  color: var(--text-color); 
+  font-weight: 700;
+}
+
+.setting-info span {
+  display: block;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 5px;
+}
+
+.setting-info p {
+  color: var(--text-secondary); /* 👈 Secondary Text Color */
+  font-size: 0.9rem;
+}
+
+/* Back Button */
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  align-self: flex-start;
+}
+.back-btn:hover {
+  color: var(--primary-color);
+}
+
+/* --- 5. SWITCH TOGGLE (Agar color change karna ho) --- */
+.slider {
+  background-color: #ccc;
+}
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+/* Toggle Switch CSS */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #334155;
+  transition: .4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px; width: 16px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+/* Container for buttons */
+.home-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+/* --- Base Premium Button Style --- */
+.home-btn {
+  position: relative;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 50px; /* Modern pill shape */
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+}
+
+.home-btn span {
+  position: relative;
+  z-index: 2; /* Keeps text above background effects */
+}
+
+/* --- Secondary Buttons (Login / Signup) --- */
+/* Sleek dark glassmorphism look */
+.home-btn.secondary {
+  background: #1a1a2e; /* Dark premium tone */
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.home-btn.secondary:hover {
+  background: #252542;
+  border-color: rgba(167, 119, 227, 0.5); /* Subtle purple border on hover */
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Primary Button (Go to Chat) --- */
+/* Rich Gradient with Glowing Shadow */
+.home-btn.primary {
+  background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(167, 119, 227, 0.4);
+}
+
+.home-btn.primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(167, 119, 227, 0.6);
+}
+
+/* --- Advanced Premium 'Shine' Effect on Primary Button --- */
+.shine-effect {
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.4) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: all 0s ease;
+  z-index: 1;
+}
+
+.home-btn.primary:hover .shine-effect {
+  animation: shine-sweep 0.8s ease-out;
+}
+
+@keyframes shine-sweep {
+  0% { left: -150%; }
+  100% { left: 200%; }
+}
+input:checked + .slider { background-color: #6366f1; }
+input:checked + .slider:before { transform: translateX(26px); }
