@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../components/Sidebar"; 
@@ -26,8 +26,8 @@ export default function Chat() {
     if (!token) navigate("/login", { replace: true });
   }, [navigate, token]);
 
-  // 2. Fetch History (Sidebar List)
-  const fetchHistory = async () => {
+  // 2. Fetch History (Sidebar List) - FIXED WITH useCallback
+  const fetchHistory = useCallback(async () => {
     if (!token) return;
     try {
       const resp = await fetch(`${API_BASE}/history`, { 
@@ -47,9 +47,12 @@ export default function Chat() {
     } catch (err) {
       console.error("History Error:", err);
     }
-  };
+  }, [token]); // token is added as a dependency here
 
-  useEffect(() => { fetchHistory(); }, [token]);
+  // React ab is par koi warning nahi dega
+  useEffect(() => { 
+    fetchHistory(); 
+  }, [fetchHistory]);
 
   // 3. Scroll & Resize Effects
   useEffect(() => {
@@ -159,7 +162,7 @@ export default function Chat() {
     } catch (err) { console.error("Delete failed", err); }
   };
 
-  // 8. 👇 NEW: Rename Logic
+  // 8. Rename Logic
   const renameChat = async (id, newTitle) => {
     try {
       const resp = await fetch(`${API_BASE}/history/rename/${id}`, {
@@ -172,7 +175,6 @@ export default function Chat() {
       });
   
       if (resp.ok) {
-        // UI me update karo bina page refresh kiye
         setHistory(prev => prev.map(chat => 
           chat._id === id ? { ...chat, title: newTitle } : chat
         ));
@@ -182,7 +184,7 @@ export default function Chat() {
     }
   };
   
-  // 9. 👇 NEW: Pin Logic
+  // 9. Pin Logic
   const pinChat = async (id) => {
     try {
       const resp = await fetch(`${API_BASE}/history/pin/${id}`, {
@@ -194,11 +196,9 @@ export default function Chat() {
         const data = await resp.json();
         
         setHistory(prev => {
-          // Status update karo
           const updatedList = prev.map(chat => 
             chat._id === id ? { ...chat, isPinned: data.isPinned } : chat
           );
-          // Re-sort: Pinned items sabse upar
           return updatedList.sort((a, b) => {
               if (a.isPinned === b.isPinned) {
                   return new Date(b.lastUpdated) - new Date(a.lastUpdated);
@@ -222,7 +222,6 @@ export default function Chat() {
         onSelectChat={loadChat}
         onDeleteHistory={deleteHistoryItem}
         activeId={conversationId}
-        // 👇 Ye naye functions pass kiye hain
         onRename={renameChat}
         onPin={pinChat}
       />
