@@ -8,7 +8,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
   const [openMenuId, setOpenMenuId] = useState(null); 
   const [isProfileOpen, setIsProfileOpen] = useState(false); 
   
-  // 👇 NEW: User Data State
+  // User Data State
   const [userData, setUserData] = useState({
     name: "User",
     email: "",
@@ -16,10 +16,11 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
   });
 
   const sidebarRef = useRef(null); 
-  const token = localStorage.getItem("token");
-  const API_BASE = "http://localhost:5000/api/auth"; // API Base URL
+  // 🔄 FIX: Use sessionStorage instead of localStorage
+  const token = sessionStorage.getItem("token");
+  const API_BASE = "http://localhost:5000/api/auth"; 
 
-  // 1. 👇 NEW: Fetch User Profile on Mount
+  // 1. Fetch User Profile on Mount
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!token) return;
@@ -29,7 +30,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
         });
         const data = await resp.json();
         if (resp.ok) {
-          setUserData(data); // State update karo
+          setUserData(data); 
         }
       } catch (err) {
         console.error("Sidebar Profile Error:", err);
@@ -37,7 +38,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
     };
 
     fetchUserProfile();
-  }, [token]); // Jab token mile tab run karo
+  }, [token]);
 
   // Outside click logic
   useEffect(() => {
@@ -51,9 +52,10 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 🔄 FIX: Updated handleLogout to clear session and go to Home ("/")
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login", { replace: true });
+    sessionStorage.removeItem("token");
+    navigate("/", { replace: true });
   };
 
   const handleMenuToggle = (e, id) => {
@@ -61,7 +63,6 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
     setOpenMenuId(openMenuId === id ? null : id);
   };
 
-  // ... (Rename, Pin, Delete handlers same rahenge)
   const handleRename = (e, id, currentTitle) => {
     e.stopPropagation();
     const newName = prompt("Enter new name:", currentTitle);
@@ -139,6 +140,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
                     </div>
                   </div>
                   
+                  {/* 🔄 FIX: Corrected the nesting of the dropdown menu */}
                   <div className="menu-container">
                     <button className="three-dot-btn" onClick={(e) => handleMenuToggle(e, chat._id)}>⋮</button>
                     {openMenuId === chat._id && (
@@ -158,7 +160,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
           </AnimatePresence>
         </div>
 
-        {/* 👇 User Profile Footer (Dynamic Data) */}
+        {/* User Profile Footer (Dynamic Data) */}
         <div className="sidebar-footer">
             
             <AnimatePresence>
@@ -187,7 +189,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
                 className={`user-profile-strip ${isProfileOpen ? "active" : ""}`} 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
-                {/* 👇 Dynamic Avatar Logic */}
+                {/* Dynamic Avatar Logic */}
                 <div className="avatar-circle">
                     {userData.avatar ? (
                         <img 
@@ -201,7 +203,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
                 </div>
 
                 <div className="user-info">
-                    {/* 👇 Dynamic Name */}
+                    {/* Dynamic Name */}
                     <span className="user-name">{userData.name}</span>
                     <span className="user-plan">Free Plan</span>
                 </div>

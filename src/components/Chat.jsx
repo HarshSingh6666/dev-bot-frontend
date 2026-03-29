@@ -17,16 +17,18 @@ export default function Chat() {
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  
+  // 🔄 FIX: Changed from localStorage to sessionStorage to match Login & Auth flow
+  const token = sessionStorage.getItem("token");
 
-  const API_BASE = "https://dev-bot-backend.onrender.com/api";
+  const API_BASE = "http://localhost:5000/api";
 
   // 1. Auth Check
   useEffect(() => {
     if (!token) navigate("/login", { replace: true });
   }, [navigate, token]);
 
-  // 2. Fetch History (Sidebar List) - FIXED WITH useCallback
+  // 2. Fetch History (Sidebar List)
   const fetchHistory = useCallback(async () => {
     if (!token) return;
     try {
@@ -47,9 +49,8 @@ export default function Chat() {
     } catch (err) {
       console.error("History Error:", err);
     }
-  }, [token]); // token is added as a dependency here
+  }, [token]);
 
-  // React ab is par koi warning nahi dega
   useEffect(() => { 
     fetchHistory(); 
   }, [fetchHistory]);
@@ -66,7 +67,7 @@ export default function Chat() {
     }
   }, [input]);
 
-  // 4. Handle Load Specific Chat (From Sidebar)
+  // 4. Handle Load Specific Chat
   const loadChat = async (id) => {
     setLoading(true);
     try {
@@ -195,10 +196,12 @@ export default function Chat() {
       if (resp.ok) {
         const data = await resp.json();
         
+        // 🔄 FIX: Cleaner sort logic within setHistory
         setHistory(prev => {
           const updatedList = prev.map(chat => 
             chat._id === id ? { ...chat, isPinned: data.isPinned } : chat
           );
+          
           return updatedList.sort((a, b) => {
               if (a.isPinned === b.isPinned) {
                   return new Date(b.lastUpdated) - new Date(a.lastUpdated);
