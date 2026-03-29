@@ -1,27 +1,34 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // Premium animation library
+import { motion } from "framer-motion"; 
 import "./Auth.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // Error dikhane ke liye state
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Page refresh hone se rokne ke liye
     setLoading(true);
+    setErrorMessage(""); // Naya try karne par purana error hata do
+
     try {
       const res = await axios.post("https://dev-bot-backend.onrender.com/api/auth/login", {
         email,
         password,
       });
-      localStorage.setItem("token", res.data.token);
+      
+      // Home.jsx aur ProtectedRoute ke hisaab se sessionStorage use karein
+      sessionStorage.setItem("token", res.data.token);
       navigate("/chat");
     } catch (err) {
-      alert("Invalid credentials. Redirecting...");
-      setTimeout(() => navigate("/signup"), 1500);
+      // Agar backend se koi specific error message aata hai, toh wo dikhayein
+      const errorMsg = err.response?.data?.message || "Invalid credentials. Please try again.";
+      setErrorMessage(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -50,11 +57,21 @@ export default function Login() {
           Welcome Back
         </motion.h2>
 
-        <div className="input-group">
+        {/* Agar error hai toh yahan show karein */}
+        {errorMessage && (
+          <p style={{ color: "#ff4d4d", fontSize: "14px", marginTop: "10px" }}>
+            {errorMessage}
+          </p>
+        )}
+
+        {/* Form add kiya taaki Enter press karne par login ho sake */}
+        <form onSubmit={handleLogin} className="input-group" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <motion.input
             whileFocus={{ scale: 1.02 }}
             className="auth-input"
             placeholder="Email"
+            type="email"
+            required
             onChange={(e) => setEmail(e.target.value)}
           />
           <motion.input
@@ -62,22 +79,24 @@ export default function Login() {
             className="auth-input"
             placeholder="Password"
             type="password"
+            required
             onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
 
-        <motion.button 
-          whileHover={{ scale: 1.05, boxShadow: "0px 0px 15px rgba(0, 255, 255, 0.4)" }}
-          whileTap={{ scale: 0.95 }}
-          className="auth-btn" 
-          onClick={handleLogin}
-          disabled={loading}
-        >
-          {loading ? "Authenticating..." : "Login"}
-        </motion.button>
+          <motion.button 
+            type="submit" // button type submit kar diya
+            whileHover={{ scale: 1.05, boxShadow: "0px 0px 15px rgba(0, 255, 255, 0.4)" }}
+            whileTap={{ scale: 0.95 }}
+            className="auth-btn" 
+            disabled={loading}
+            style={{ marginTop: "15px" }}
+          >
+            {loading ? "Authenticating..." : "Login"}
+          </motion.button>
+        </form>
 
         <p className="switch-text">
-          Don't have an account? <span onClick={() => navigate("/signup")}>Create one</span>
+          Don't have an account? <span onClick={() => navigate("/signup")} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Create one</span>
         </p>
       </motion.div>
     </div>

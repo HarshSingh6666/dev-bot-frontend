@@ -7,7 +7,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const token = localStorage.getItem("token");
-  const API_BASE = "https://dev-bot-backend.onrender.com/api/auth";
+  const API_BASE = "http://localhost:5000/api/auth";
 
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [loading, setLoading] = useState(true);
