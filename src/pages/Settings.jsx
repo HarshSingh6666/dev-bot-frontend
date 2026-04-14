@@ -6,10 +6,8 @@ import "./Home.css";
 export default function Settings() {
   const navigate = useNavigate();
   
-  // 🚀 THE FIX: Ab yeh dono storage check karega. 
-  // Agar Login ne localStorage mein save kiya hoga, tab bhi mil jayega!
+  // Storage check
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  
   const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
@@ -24,7 +22,6 @@ export default function Settings() {
   // Global 401 (Unauthorized) Handler
   const handleAuthCheck = (response) => {
     if (response.status === 401) {
-      // 🚀 THE FIX: Dono storage clear karo taaki koi kachra na bache
       localStorage.removeItem("token");
       sessionStorage.removeItem("token"); 
       navigate("/login", { replace: true }); 
@@ -76,7 +73,6 @@ export default function Settings() {
     
     if (confirmDelete !== "DELETE") return;
 
-    // 🕵️‍♂️ DEBUGGING LOG: Yeh humein batayega token sahi se mila ya nahi
     console.log("Current Token being sent to backend:", token);
 
     setLoading(true);
@@ -89,12 +85,13 @@ export default function Settings() {
       if (handleAuthCheck(resp)) return;
 
       if (resp.ok) {
-        alert("Account Deleted. Bye! 👋");
-        // 🚀 THE FIX: Dono jagah se token hatao
+        // 🚀 THE FIX: Turant storage saaf karo aur bina Alert ke seedha Login pe bhejo!
         localStorage.removeItem("token"); 
         sessionStorage.removeItem("token"); 
         localStorage.removeItem("theme"); 
-        window.location.href = "/login";  
+        
+        // Bina page refresh kiye instant redirect
+        navigate("/login", { replace: true });  
       } else {
         alert("Failed to delete account.");
       }
