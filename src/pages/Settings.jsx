@@ -6,12 +6,12 @@ import "./Home.css";
 export default function Settings() {
   const navigate = useNavigate();
   
-  // 🔄 FIX: Changed to sessionStorage to match Chat.js and Login flow
-  const token = sessionStorage.getItem("token");
+  // 🚀 THE FIX: Ab yeh dono storage check karega. 
+  // Agar Login ne localStorage mein save kiya hoga, tab bhi mil jayega!
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  
   const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
-  // --- States ---
-  // LocalStorage se initial value uthao taaki refresh pe setting na ude
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
   const [notifications, setNotifications] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -21,17 +21,19 @@ export default function Settings() {
     if (!token) navigate("/login", { replace: true });
   }, [navigate, token]);
 
-  // 🆕 Helper Function: Global 401 (Unauthorized) Handler
+  // Global 401 (Unauthorized) Handler
   const handleAuthCheck = (response) => {
     if (response.status === 401) {
-      sessionStorage.removeItem("token"); // Clear bad token
-      navigate("/login", { replace: true }); // Redirect to login
-      return true; // Indicates auth failed
+      // 🚀 THE FIX: Dono storage clear karo taaki koi kachra na bache
+      localStorage.removeItem("token");
+      sessionStorage.removeItem("token"); 
+      navigate("/login", { replace: true }); 
+      return true; 
     }
-    return false; // Indicates auth is fine
+    return false; 
   };
 
-  // --- Dark Mode Effect ---
+  // Dark Mode Effect
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add("dark-mode");
@@ -42,7 +44,7 @@ export default function Settings() {
     }
   }, [darkMode]);
 
-  // --- 1. Clear History Function ---
+  // 1. Clear History Function
   const handleClearHistory = async () => {
     if(!window.confirm("Are you sure? This will delete all your chats permanently.")) return;
 
@@ -53,7 +55,7 @@ export default function Settings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+      if (handleAuthCheck(resp)) return;
 
       if (resp.ok) {
         alert("History Cleared! 🗑️");
@@ -68,11 +70,14 @@ export default function Settings() {
     }
   };
 
-  // --- 2. Delete Account Function ---
+  // 2. Delete Account Function
   const handleDeleteAccount = async () => {
     const confirmDelete = window.prompt("Type 'DELETE' to confirm account deletion. This cannot be undone.");
     
     if (confirmDelete !== "DELETE") return;
+
+    // 🕵️‍♂️ DEBUGGING LOG: Yeh humein batayega token sahi se mila ya nahi
+    console.log("Current Token being sent to backend:", token);
 
     setLoading(true);
     try {
@@ -81,13 +86,15 @@ export default function Settings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+      if (handleAuthCheck(resp)) return;
 
       if (resp.ok) {
         alert("Account Deleted. Bye! 👋");
-        sessionStorage.removeItem("token"); // 🔄 FIX: Match sessionStorage
-        localStorage.removeItem("theme"); // Theme hatao
-        window.location.href = "/login";  // Login page pe bhejo (Hard refresh ke sath)
+        // 🚀 THE FIX: Dono jagah se token hatao
+        localStorage.removeItem("token"); 
+        sessionStorage.removeItem("token"); 
+        localStorage.removeItem("theme"); 
+        window.location.href = "/login";  
       } else {
         alert("Failed to delete account.");
       }
