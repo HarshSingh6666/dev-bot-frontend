@@ -21,7 +21,7 @@ export default function Chat() {
   // 🔄 FIX: Changed from localStorage to sessionStorage to match Login & Auth flow
   const token = sessionStorage.getItem("token");
 
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
   // 1. Auth Check
   useEffect(() => {
