@@ -18,15 +18,23 @@ export default function Chat() {
   const textareaRef = useRef(null);
   const navigate = useNavigate();
   
-  // 🔄 FIX: Changed from localStorage to sessionStorage to match Login & Auth flow
   const token = sessionStorage.getItem("token");
-
   const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
-  // 1. Auth Check
+  // 1. Auth Check on Mount
   useEffect(() => {
     if (!token) navigate("/login", { replace: true });
   }, [navigate, token]);
+
+  // 🆕 Helper Function: Global 401 (Unauthorized) Handler
+  const handleAuthCheck = (response) => {
+    if (response.status === 401) {
+      sessionStorage.removeItem("token"); // Clear bad token
+      navigate("/login", { replace: true }); // Redirect to login
+      return true; // Indicates auth failed
+    }
+    return false; // Indicates auth is fine
+  };
 
   // 2. Fetch History (Sidebar List)
   const fetchHistory = useCallback(async () => {
@@ -35,9 +43,11 @@ export default function Chat() {
       const resp = await fetch(`${API_BASE}/history`, { 
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       const data = await resp.json();
       
-      // Data aane par ensure karein ki wo sorted ho (Pinned first)
       const sortedData = Array.isArray(data) ? data.sort((a, b) => {
          if (a.isPinned === b.isPinned) {
             return new Date(b.lastUpdated) - new Date(a.lastUpdated);
@@ -49,7 +59,7 @@ export default function Chat() {
     } catch (err) {
       console.error("History Error:", err);
     }
-  }, [token]);
+  }, [token, navigate]);
 
   useEffect(() => { 
     fetchHistory(); 
@@ -74,12 +84,14 @@ export default function Chat() {
       const resp = await fetch(`${API_BASE}/history/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       const data = await resp.json();
       
       if (data && data.messages) {
         setConversationId(data._id);
         
-        // Map DB 'content' to UI 'text'
         const formattedMessages = data.messages.map(msg => ({
           role: msg.role === "model" ? "assistant" : "user",
           text: msg.content,
@@ -118,11 +130,7 @@ export default function Chat() {
 
     try {
       const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      
-      const payload = { 
-        prompt: promptText,
-        conversationId: conversationId
-      };
+      const payload = { prompt: promptText, conversationId: conversationId };
 
       const resp = await fetch(`${API_BASE}/chat`, {
         method: "POST",
@@ -130,11 +138,13 @@ export default function Chat() {
         body: JSON.stringify(payload),
       });
       
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       const data = await resp.json();
 
       if (data.conversationId) {
         setConversationId(data.conversationId);
-        if (!conversationId) fetchHistory(); // Refresh sidebar if new chat
+        if (!conversationId) fetchHistory();
       }
 
       setMessages((prev) => [...prev, { role: "assistant", text: data.reply || "⚠️ No response" }]);
@@ -156,6 +166,9 @@ export default function Chat() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       if (resp.ok) {
         setHistory((prev) => prev.filter((item) => item._id !== id));
         if (conversationId === id) startNewChat();
@@ -175,6 +188,8 @@ export default function Chat() {
         body: JSON.stringify({ newTitle })
       });
   
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       if (resp.ok) {
         setHistory(prev => prev.map(chat => 
           chat._id === id ? { ...chat, title: newTitle } : chat
@@ -193,10 +208,11 @@ export default function Chat() {
         headers: { Authorization: `Bearer ${token}` }
       });
   
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       if (resp.ok) {
         const data = await resp.json();
         
-        // 🔄 FIX: Cleaner sort logic within setHistory
         setHistory(prev => {
           const updatedList = prev.map(chat => 
             chat._id === id ? { ...chat, isPinned: data.isPinned } : chat
