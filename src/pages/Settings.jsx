@@ -6,7 +6,7 @@ import "./Home.css"; // Style file path check kar lena
 export default function Settings() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
   // --- States ---
   // LocalStorage se initial value uthao taaki refresh pe setting na ude
