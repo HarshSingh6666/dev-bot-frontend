@@ -18,7 +18,7 @@ export default function Sidebar({ allHistory, isOpen, onClose, onNewChat, onDele
   const sidebarRef = useRef(null); 
   // 🔄 FIX: Use sessionStorage instead of localStorage
   const token = sessionStorage.getItem("token");
-  const API_BASE = "http://localhost:5000/api/auth"; 
+  const API_BASE = "https://dev-bot-backend.onrender.com/api/auth"; 
 
   // 1. Fetch User Profile on Mount
   useEffect(() => {
