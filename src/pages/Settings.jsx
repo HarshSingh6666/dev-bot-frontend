@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import "./Home.css"; // Style file path check kar lena
+import "./Home.css"; 
 
 export default function Settings() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  
+  // 🔄 FIX: Changed to sessionStorage to match Chat.js and Login flow
+  const token = sessionStorage.getItem("token");
   const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
   // --- States ---
@@ -13,6 +15,21 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
   const [notifications, setNotifications] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  // 1. Auth Check on Mount
+  useEffect(() => {
+    if (!token) navigate("/login", { replace: true });
+  }, [navigate, token]);
+
+  // 🆕 Helper Function: Global 401 (Unauthorized) Handler
+  const handleAuthCheck = (response) => {
+    if (response.status === 401) {
+      sessionStorage.removeItem("token"); // Clear bad token
+      navigate("/login", { replace: true }); // Redirect to login
+      return true; // Indicates auth failed
+    }
+    return false; // Indicates auth is fine
+  };
 
   // --- Dark Mode Effect ---
   useEffect(() => {
@@ -35,6 +52,8 @@ export default function Settings() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
 
       if (resp.ok) {
         alert("History Cleared! 🗑️");
@@ -62,9 +81,11 @@ export default function Settings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      if (handleAuthCheck(resp)) return; // Stop if Unauthorized
+
       if (resp.ok) {
         alert("Account Deleted. Bye! 👋");
-        localStorage.removeItem("token"); // Token hatao
+        sessionStorage.removeItem("token"); // 🔄 FIX: Match sessionStorage
         localStorage.removeItem("theme"); // Theme hatao
         window.location.href = "/login";  // Login page pe bhejo (Hard refresh ke sath)
       } else {
