@@ -6,7 +6,7 @@ import "./Home.css";
 export default function Settings() {
   const navigate = useNavigate();
   
-  // Storage check
+  // 🚀 Bulletproof Storage Check: Kahin bhi save ho, token mil jayega
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const API_BASE = "https://dev-bot-backend.onrender.com/api";
 
@@ -24,7 +24,8 @@ export default function Settings() {
     if (response.status === 401) {
       localStorage.removeItem("token");
       sessionStorage.removeItem("token"); 
-      navigate("/login", { replace: true }); 
+      // Agar yahan 401 aata hai, tab bhi hard refresh taaki react memory wipe ho
+      window.location.href = "/login"; 
       return true; 
     }
     return false; 
@@ -85,13 +86,14 @@ export default function Settings() {
       if (handleAuthCheck(resp)) return;
 
       if (resp.ok) {
-        // 🚀 THE FIX: Turant storage saaf karo aur bina Alert ke seedha Login pe bhejo!
+        // 🚀 THE FIX: Turant dono storage saaf karo
         localStorage.removeItem("token"); 
         sessionStorage.removeItem("token"); 
         localStorage.removeItem("theme"); 
         
-        // Bina page refresh kiye instant redirect
-        navigate("/login", { replace: true });  
+        // 🔥 THE MAGIC FIX: window.location.href browser ko force refresh karega, 
+        // jisse React ki "Ghost Memory" clear hogi aur loop break ho jayega!
+        window.location.href = "/login";  
       } else {
         alert("Failed to delete account.");
       }
